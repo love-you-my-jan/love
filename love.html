@@ -20,7 +20,7 @@
             align-items: center;
             min-height: 100vh;
             overflow-x: hidden;
-            cursor: pointer; /* Indicates clickable everywhere */
+            cursor: pointer;
         }
 
         /* 1. Header Section */
@@ -70,7 +70,7 @@
         /* 3. The Cake & Candles */
         .cake-container {
             position: relative;
-            margin-top: 80px; /* Added more space */
+            margin-top: 80px;
             width: 300px;
             height: 200px;
             display: flex;
@@ -164,7 +164,7 @@
             100% { transform: translate(-50%, -30px); opacity: 0; }
         }
 
-        /* Status Text (Replaces Button) */
+        /* Status Text */
         #status-text {
             margin-top: 40px;
             font-size: 14px;
@@ -220,6 +220,9 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        let autoTime = null; // Store timer value
+        let timerStarted = false;
+
         // 2. Load Data from Firebase
         db.ref('settings/love_page').on('value', (snapshot) => {
             const data = snapshot.val();
@@ -227,6 +230,18 @@
                 document.getElementById('love-title').innerText = data.title || "Happy Birthday";
                 document.getElementById('love-caption').innerText = data.caption || "Make a wish...";
                 
+                // Auto Timer Logic
+                if(data.timer && !timerStarted) {
+                    timerStarted = true;
+                    console.log("Auto timer set for: " + data.timer + " seconds");
+                    setTimeout(() => {
+                        if(!isBlowing) {
+                            blowOutCandles();
+                            document.getElementById('status-text').innerText = "✨ Magic happened! ✨";
+                        }
+                    }, data.timer * 1000); // Convert seconds to milliseconds
+                }
+
                 const logoContainer = document.getElementById('logos-area');
                 logoContainer.innerHTML = "";
                 if(data.memories) {
@@ -253,7 +268,7 @@
             candlesHolder.appendChild(candle);
         }
 
-        // 4. Auto Microphone "Blow" Detection Logic
+        // 4. Microphone Logic
         let audioContext;
         let analyser;
         let microphone;
@@ -262,7 +277,7 @@
 
         // Function to start Microphone
         async function initMic() {
-            if (isMicInitialized) return; // Don't init twice
+            if (isMicInitialized) return; 
 
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
@@ -273,13 +288,13 @@
                 analyser.fftSize = 256;
                 
                 isMicInitialized = true;
-                document.getElementById('status-text').innerText = "Blow on the screen to extinguish candles! 🎂";
+                document.getElementById('status-text').innerText = "Blow on the screen or wait... 🎂";
                 document.getElementById('status-text').style.color = "#2ed573";
                 
                 detectBlow();
             } catch (err) {
-                console.log("Auto start failed or denied. Waiting for user interaction.");
-                document.getElementById('status-text').innerText = "Tap anywhere & Allow Mic to Blow Candles!";
+                console.log("Auto start failed or denied.");
+                document.getElementById('status-text').innerText = "Tap screen to use Mic, or wait for magic!";
             }
         }
 
@@ -288,7 +303,7 @@
             initMic();
         });
 
-        // Also try to start on ANY click/touch (Backup if auto-start is blocked)
+        // Also try to start on ANY click
         document.body.addEventListener('click', () => {
             if (!isMicInitialized) initMic();
             if (audioContext && audioContext.state === 'suspended') {
@@ -311,7 +326,6 @@
                 }
                 let average = sum / bufferLength;
 
-                // Threshold for "Blow"
                 if (average > 40 && !isBlowing) { 
                     blowOutCandles();
                 }
@@ -324,6 +338,7 @@
         }
 
         function blowOutCandles() {
+            if(isBlowing) return; // Prevent double trigger
             isBlowing = true;
             
             const candles = document.querySelectorAll('.candle');
