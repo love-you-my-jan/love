@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Make a Wish</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+
+    <style>
+        /* Dark Theme for Candles */
+        body {
+            background-color: #1a0b2e;
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            cursor: pointer; /* Indicates clickable everywhere */
+        }
+
+        /* 1. Header Section */
+        .header {
+            text-align: center;
+            margin-top: 30px;
+            z-index: 10;
+        }
+        .header h1 {
+            font-family: 'Dancing Script', cursive;
+            font-size: 3rem;
+            color: #ff4d6d;
+            text-shadow: 0 0 10px #ff4d6d;
+        }
+        .header p { color: #ccc; font-size: 14px; letter-spacing: 1px; }
+
+        /* 2. Seven Logos Section */
+        .logos-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0;
+            width: 90%;
+            max-width: 600px;
+        }
+        .logo-item {
+            text-align: center;
+            width: 70px;
+        }
+        .logo-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 2px solid #ff4d6d;
+            object-fit: cover;
+            box-shadow: 0 0 10px rgba(255, 77, 109, 0.5);
+            transition: 0.3s;
+        }
+        .logo-img:hover { transform: scale(1.1); }
+        .logo-name {
+            font-size: 10px;
+            margin-top: 5px;
+            color: #fff;
+        }
+
+        /* 3. The Cake & Candles */
+        .cake-container {
+            position: relative;
+            margin-top: 80px; /* Added more space */
+            width: 300px;
+            height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        .cake {
+            position: absolute;
+            bottom: 0;
+            width: 250px;
+            height: 100px;
+            background: #f8c291;
+            border-radius: 20px 20px 0 0;
+            box-shadow: inset 0 -20px 0px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: center;
+        }
+
+        .cake::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            height: 20px;
+            background: #e55039;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Candles Positioning */
+        .candles-area {
+            position: absolute;
+            bottom: 100px; /* On top of cake */
+            width: 260px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 2px;
+        }
+
+        .candle {
+            width: 8px;
+            height: 35px;
+            background: linear-gradient(#fab1a0, #e17055);
+            border-radius: 3px;
+            position: relative;
+            margin: 0 2px;
+        }
+
+        /* The Flame */
+        .flame {
+            width: 10px;
+            height: 15px;
+            background: #ff9f43;
+            border-radius: 50% 50% 20% 20%;
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 0 10px #ff9f43, 0 0 20px #ff9f43;
+            animation: flicker 0.1s infinite alternate;
+            opacity: 1; /* Default ON */
+            transition: opacity 0.5s;
+        }
+
+        /* Smoke (Initially Hidden) */
+        .smoke {
+            width: 5px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.5);
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            border-radius: 50%;
+            filter: blur(2px);
+            opacity: 0;
+            transition: opacity 1s;
+        }
+
+        /* Extinguished State */
+        .out .flame { opacity: 0; animation: none; }
+        .out .smoke { opacity: 1; animation: smokeRise 2s forwards; }
+
+        @keyframes flicker {
+            from { transform: translateX(-50%) scale(1); }
+            to { transform: translateX(-50%) scale(1.1); opacity: 0.8; }
+        }
+        @keyframes smokeRise {
+            0% { transform: translate(-50%, 0); opacity: 0.8; }
+            100% { transform: translate(-50%, -30px); opacity: 0; }
+        }
+
+        /* Status Text (Replaces Button) */
+        #status-text {
+            margin-top: 40px;
+            font-size: 14px;
+            color: #ff4d6d;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        <h1 id="love-title">Loading...</h1>
+        <p id="love-caption">Make a wish...</p>
+    </div>
+
+    <!-- 7 Logos -->
+    <div class="logos-container" id="logos-area">
+        <!-- Logos loaded from DB -->
+    </div>
+
+    <!-- The Cake -->
+    <div class="cake-container">
+        <div class="candles-area" id="candles-holder">
+            <!-- 21 Candles will be generated here -->
+        </div>
+        <div class="cake">
+            <div style="color: rgba(0,0,0,0.3); align-self: center; font-weight: bold;">HAPPY BIRTHDAY</div>
+        </div>
+    </div>
+
+    <!-- Hidden Mic Info -->
+    <p id="status-text">Initializing Magic...</p>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+
+    <script>
+        // 1. Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCXMFqxIe8IrZkzUx2YVMTvVXQmIAhtruc",
+            authDomain: "love-1-6cdb1.firebaseapp.com",
+            databaseURL: "https://love-1-6cdb1-default-rtdb.firebaseio.com",
+            projectId: "love-1-6cdb1",
+            storageBucket: "love-1-6cdb1.firebasestorage.app",
+            messagingSenderId: "949848083048",
+            appId: "1:949848083048:web:ced52526264da1dcf4c9dd"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // 2. Load Data from Firebase
+        db.ref('settings/love_page').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if(data) {
+                document.getElementById('love-title').innerText = data.title || "Happy Birthday";
+                document.getElementById('love-caption').innerText = data.caption || "Make a wish...";
+                
+                const logoContainer = document.getElementById('logos-area');
+                logoContainer.innerHTML = "";
+                if(data.memories) {
+                    data.memories.forEach(mem => {
+                        if(mem.img) {
+                            logoContainer.innerHTML += `
+                                <div class="logo-item">
+                                    <img src="${mem.img}" class="logo-img">
+                                    <div class="logo-name">${mem.txt}</div>
+                                </div>
+                            `;
+                        }
+                    });
+                }
+            }
+        });
+
+        // 3. Generate 21 Candles
+        const candlesHolder = document.getElementById('candles-holder');
+        for(let i=0; i<21; i++) {
+            const candle = document.createElement('div');
+            candle.className = 'candle';
+            candle.innerHTML = `<div class="flame"></div><div class="smoke"></div>`;
+            candlesHolder.appendChild(candle);
+        }
+
+        // 4. Auto Microphone "Blow" Detection Logic
+        let audioContext;
+        let analyser;
+        let microphone;
+        let isBlowing = false;
+        let isMicInitialized = false;
+
+        // Function to start Microphone
+        async function initMic() {
+            if (isMicInitialized) return; // Don't init twice
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                microphone = audioContext.createMediaStreamSource(stream);
+                microphone.connect(analyser);
+                analyser.fftSize = 256;
+                
+                isMicInitialized = true;
+                document.getElementById('status-text').innerText = "Blow on the screen to extinguish candles! 🎂";
+                document.getElementById('status-text').style.color = "#2ed573";
+                
+                detectBlow();
+            } catch (err) {
+                console.log("Auto start failed or denied. Waiting for user interaction.");
+                document.getElementById('status-text').innerText = "Tap anywhere & Allow Mic to Blow Candles!";
+            }
+        }
+
+        // Try to start immediately on load
+        window.addEventListener('load', () => {
+            initMic();
+        });
+
+        // Also try to start on ANY click/touch (Backup if auto-start is blocked)
+        document.body.addEventListener('click', () => {
+            if (!isMicInitialized) initMic();
+            if (audioContext && audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+        });
+
+        function detectBlow() {
+            if (isBlowing) return;
+
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            
+            function checkVolume() {
+                analyser.getByteFrequencyData(dataArray);
+                
+                let sum = 0;
+                for(let i = 0; i < bufferLength; i++) {
+                    sum += dataArray[i];
+                }
+                let average = sum / bufferLength;
+
+                // Threshold for "Blow"
+                if (average > 40 && !isBlowing) { 
+                    blowOutCandles();
+                }
+
+                if (!isBlowing) {
+                    requestAnimationFrame(checkVolume);
+                }
+            }
+            checkVolume();
+        }
+
+        function blowOutCandles() {
+            isBlowing = true;
+            
+            const candles = document.querySelectorAll('.candle');
+            candles.forEach((c, index) => {
+                setTimeout(() => {
+                    c.classList.add('out');
+                }, index * 50); 
+            });
+
+            document.getElementById('status-text').innerText = "🎉 Yay! Happy Birthday! 🎉";
+
+            setTimeout(() => {
+                triggerConfetti();
+            }, 1000);
+        }
+
+        function triggerConfetti() {
+            var duration = 5 * 1000;
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+            var interval = setInterval(function() {
+                var timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) { return clearInterval(interval); }
+                var particleCount = 50 * (timeLeft / duration);
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: Math.random(), y: Math.random() - 0.2 } }));
+            }, 250);
+        }
+        
+    </script>
+</body>
+</html>
