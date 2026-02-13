@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - My Love</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+            min-height: 100vh;
+            font-family: 'Poppins', sans-serif;
+            overflow-x: hidden;
+            padding-bottom: 50px;
+        }
+
+        /* Love Animation Background */
+        .hearts-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .heart-anim {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.6);
+            animation: floatUp 5s linear infinite;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) scale(0.5); opacity: 1; }
+            100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 30px 20px;
+            position: relative;
+            z-index: 10;
+        }
+        .header h1 {
+            font-family: 'Dancing Script', cursive;
+            color: #ff0055;
+            font-size: 3rem;
+            text-shadow: 2px 2px 5px rgba(255, 255, 255, 0.5);
+            animation: heartbeat 1.5s infinite;
+        }
+
+        /* Button Grid */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Dynamic Card Style */
+        .love-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(5px);
+            border-radius: 20px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(255, 77, 109, 0.2);
+            transition: transform 0.3s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .love-card:hover { transform: translateY(-5px); }
+
+        .card-img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 15px;
+            margin-bottom: 10px;
+        }
+        .card-title { font-weight: bold; color: #333; font-size: 14px; }
+        
+        /* Timer Badge */
+        .timer-badge {
+            position: absolute;
+            top: 10px; right: 10px;
+            background: red;
+            color: white;
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 10px;
+            display: none; /* Shows when clicked */
+        }
+
+        /* 20 Second Hidden Button */
+        .special-love-btn {
+            display: none; /* Initially Hidden */
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(45deg, #ff0055, #ff4d6d);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: bold;
+            box-shadow: 0 0 20px #ff0055;
+            z-index: 100;
+            border: none;
+            cursor: pointer;
+            animation: bounceIn 1s;
+        }
+        .special-love-btn i { margin-right: 10px; }
+
+        /* Modal for Viewing Content */
+        #view-modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            max-width: 400px;
+            text-align: center;
+            animation: zoomIn 0.3s;
+        }
+        .modal-content img { width: 100%; border-radius: 10px; margin-bottom: 15px; }
+        .modal-content p { font-size: 16px; color: #555; margin-bottom: 15px; }
+        .countdown-text { color: red; font-weight: bold; font-size: 20px; }
+
+        @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        @keyframes bounceIn { 0% { opacity: 0; transform: translate(-50%, 50px); } 100% { opacity: 1; transform: translate(-50%, 0); } }
+        @keyframes zoomIn { from { transform: scale(0); } to { transform: scale(1); } }
+
+    </style>
+</head>
+<body>
+
+    <!-- Background Animation -->
+    <div class="hearts-bg" id="hearts-container"></div>
+
+    <!-- Header -->
+    <div class="header">
+        <h1 id="main-title">My Love</h1>
+        <p>Click the cards to reveal my feelings...</p>
+    </div>
+
+    <!-- Dynamic Buttons Area -->
+    <div class="grid-container" id="cards-area">
+        <!-- Cards will load here from Firebase -->
+    </div>
+
+    <!-- The 20-Second Special Button -->
+    <button class="special-love-btn" id="love-btn" onclick="window.location.href='love.html'">
+        <i class="fas fa-heart"></i> LOVE FOR YOU
+    </button>
+
+    <!-- Modal for Viewing Message -->
+    <div id="view-modal">
+        <div class="modal-content">
+            <img id="modal-img" src="" alt="">
+            <h3 id="modal-title"></h3>
+            <p id="modal-text"></p>
+            <div class="countdown-text" id="modal-timer"></div>
+            <button onclick="closeModal()" style="padding: 10px 20px; margin-top:10px; border:none; background:#333; color:white; border-radius:5px;">Close</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+
+    <script>
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCXMFqxIe8IrZkzUx2YVMTvVXQmIAhtruc",
+            authDomain: "love-1-6cdb1.firebaseapp.com",
+            databaseURL: "https://love-1-6cdb1-default-rtdb.firebaseio.com",
+            projectId: "love-1-6cdb1",
+            storageBucket: "love-1-6cdb1.firebasestorage.app",
+            messagingSenderId: "949848083048",
+            appId: "1:949848083048:web:ced52526264da1dcf4c9dd"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // 1. Background Hearts
+        function createHearts() {
+            const container = document.getElementById('hearts-container');
+            for(let i=0; i<30; i++) {
+                let div = document.createElement('div');
+                div.className = 'heart-anim';
+                div.innerHTML = '❤';
+                div.style.left = Math.random() * 100 + '%';
+                div.style.fontSize = (Math.random() * 20 + 10) + 'px';
+                div.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                div.style.animationDelay = Math.random() * 5 + 's';
+                container.appendChild(div);
+            }
+        }
+        createHearts();
+
+        // 2. Load Header Title
+        db.ref('settings/home/title').on('value', (snap) => {
+            if(snap.val()) document.getElementById('main-title').innerText = snap.val();
+        });
+
+        // 3. Load Dynamic Buttons
+        const cardsArea = document.getElementById('cards-area');
+
+        db.ref('home_buttons').on('value', (snapshot) => {
+            cardsArea.innerHTML = ""; // Clear existing
+            
+            snapshot.forEach((child) => {
+                const key = child.key;
+                const data = child.val();
+
+                // Create Card
+                const card = document.createElement('div');
+                card.className = 'love-card';
+                card.onclick = () => openCard(key, data);
+
+                let imgHTML = data.image ? `<img src="${data.image}" class="card-img">` : '';
+                
+                card.innerHTML = `
+                    ${imgHTML}
+                    <div class="card-title">${data.name}</div>
+                    <div class="timer-badge" id="badge-${key}">Active</div>
+                `;
+                cardsArea.appendChild(card);
+            });
+        });
+
+        // 4. Handle Card Click
+        let currentTimer = null;
+
+        function openCard(key, data) {
+            // Show content in Modal
+            document.getElementById('modal-img').src = data.image || "";
+            document.getElementById('modal-title').innerText = data.name;
+            document.getElementById('modal-text').innerText = data.caption || "Enjoy this moment...";
+            document.getElementById('view-modal').style.display = "flex";
+
+            // If not already clicked, Start Timer in DB
+            if(!data.clicked) {
+                db.ref('home_buttons/' + key).update({
+                    clicked: true,
+                    startTime: firebase.database.ServerValue.TIMESTAMP
+                });
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('view-modal').style.display = "none";
+        }
+
+        // 5. Global Timer Loop (Checks every second for expired buttons)
+        setInterval(() => {
+            const now = Date.now();
+            
+            // We need to fetch data to check time (Efficient way would be server-side, but here client-side)
+            db.ref('home_buttons').once('value', (snapshot) => {
+                snapshot.forEach((child) => {
+                    const key = child.key;
+                    const data = child.val();
+
+                    if (data.clicked && data.startTime) {
+                        const elapsedSeconds = (now - data.startTime) / 1000;
+                        const remaining = data.duration - elapsedSeconds;
+
+                        // Update Modal Timer if open
+                        if(document.getElementById('modal-title').innerText === data.name) {
+                            document.getElementById('modal-timer').innerText = `Deleting in: ${Math.max(0, Math.floor(remaining))}s`;
+                        }
+
+                        // If time up, Delete from DB
+                        if (remaining <= 0) {
+                            db.ref('home_buttons/' + key).remove();
+                            // If modal was open for this item, close it
+                            if(document.getElementById('modal-title').innerText === data.name) {
+                                closeModal();
+                                alert("Time's up! This memory has vanished forever.");
+                            }
+                        }
+                    }
+                });
+            });
+        }, 1000);
+
+        // 6. The 20-Second Special Button Logic
+        setTimeout(() => {
+            document.getElementById('love-btn').style.display = "block";
+        }, 20000); // 20 Seconds = 20000ms
+
+    </script>
+</body>
+</html>
